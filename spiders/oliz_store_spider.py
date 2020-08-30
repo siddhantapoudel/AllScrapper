@@ -40,7 +40,7 @@ class OlizStoreSpider(scrapy.Spider):
         description = response.css("div.description div")[0].get()
         images = [response.meta["image"]]
         f.write(str(response.meta["name"])+" \n")
-        with open('./Datas/okadam-2020-08-30.json', mode='a') as productsjson:
+        with open('./Datas/oliz-store-2020-08-30.json', mode='a') as productsjson:
             data = {
                 "name": str(response.meta["name"]),
                 "price": response.meta["price"],
