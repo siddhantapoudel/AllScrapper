@@ -101,9 +101,9 @@ class DealAyoSpider(scrapy.Spider):
             "https://www.dealayo.com/more/groceries.html",
             "https://www.dealayo.com/more/office-supplies-stationery/office-accessories.html",
         ]
-        #yield scrapy.Request(url=urls[1], callback=self.productListParser)
-        for url in urls:
-            yield scrapy.Request(url=url, callback=self.productListParser)
+        yield scrapy.Request(url=urls[1], callback=self.productListParser)
+        #for url in urls:
+        #    yield scrapy.Request(url=url, callback=self.productListParser)
 
     def productListParser(self,response):
         products = response.css("div.products-grid ul li.product-item")

@@ -1,5 +1,4 @@
 import scrapy
-import json
 f = open("darazdump.txt", "w")
 
 class OkDamSpider(scrapy.Spider):
@@ -12,9 +11,9 @@ class OkDamSpider(scrapy.Spider):
     def homePageParser(self, response):
         # response.css('ul.menu a::attr(href)').getall() To get all the urls
         categoryUrls = response.css('div.megadrop div.grid-col ul li a::attr(href)').getall()
-        for urls in categoryUrls:
-            yield scrapy.Request(url=urls, callback=self.homePageParser)
-        #yield scrapy.Request(url=categoryUrls[1], callback=self.categoryListPageParser)
+        #for urls in categoryUrls:
+        #    yield scrapy.Request(url=urls, callback=self.homePageParser)
+        yield scrapy.Request(url=categoryUrls[1], callback=self.categoryListPageParser)
 
 
     def categoryListPageParser(self, response):
@@ -51,16 +50,3 @@ class OkDamSpider(scrapy.Spider):
         for image in images:
             imageUrl = image.css("img::attr(src)").get()
             imageList.append(imageUrl)
-        with open('./Datas/okadam-2020-08-30.json', mode='a') as productsjson:
-            data = {
-                "name": str(response.meta["name"]),
-                "price": response.meta["price"],
-                "url": response.meta["url"],
-                "CatagoryName": "",
-                "image": response.meta["image"],
-                "description": description,
-                "images": imageList
-            }
-            productsjson.write(json.dumps(data))
-            productsjson.write("\n")
-            productsjson.close()
