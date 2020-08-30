@@ -1,4 +1,5 @@
 import scrapy
+import json
 f = open("darazdump.txt", "w")
 
 class OlizStoreSpider(scrapy.Spider):
@@ -37,4 +38,18 @@ class OlizStoreSpider(scrapy.Spider):
 
     def productDescriptionParser(self, response):
         description = response.css("div.description div")[0].get()
+        images = [response.meta["image"]]
         f.write(str(response.meta["name"])+" \n")
+        with open('./Datas/oliz-store-2020-08-30.json', mode='a') as productsjson:
+            data = {
+                "name": str(response.meta["name"]),
+                "price": response.meta["price"],
+                "url": response.meta["url"],
+                "CatagoryName": "",
+                "image": response.meta["image"],
+                "description": description,
+                "images": [response.meta["image"]]
+            }
+            productsjson.write(json.dumps(data))
+            productsjson.write("\n")
+            productsjson.close()
