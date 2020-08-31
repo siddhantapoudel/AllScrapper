@@ -1,7 +1,7 @@
 import scrapy
 import itertools
 import re
-f = open("darazdump.txt", "w")
+import json
 
 
 class ThuloSpider(scrapy.Spider):
@@ -154,7 +154,8 @@ class ThuloSpider(scrapy.Spider):
             ,"https://thulo.com/diapers/"
             ,"https://thulo.com/pet-food/"
         ]
-        yield scrapy.Request(url=links[0], callback=self.productListParser)
+        for link in links:
+            yield scrapy.Request(url=link, callback=self.productListParser)
 
     def productListParser(self,response):
         categoryName = response.css("h1.ty-mainbox-title span::text").get()
@@ -164,17 +165,19 @@ class ThuloSpider(scrapy.Spider):
             tempImage = imageSoup.css("img::attr(src)").get()
             itemURL = imageSoup.css("a::attr(href)").get()
             itemTitle = item.css("a.product-title::text").get()
-            priceList = item.css("span.ty-price-num")
-            if priceList[1]:
-                itemPrice = priceList[1].get()
-            data = {
-                "name":itemTitle,
-                "url":itemURL,
-                "price":itemPrice,
-                "image":tempImage,
-                "category":categoryName
-            }
-            yield scrapy.Request(url=itemURL, callback=self.productPageParser,meta=data)
+            priceList = item.css("span.ty-price-num::text").getall()
+            try:
+                itemPrice = priceList[1]
+                data = {
+                    "name":itemTitle,
+                    "url":itemURL,
+                    "price":itemPrice,
+                    "image":tempImage,
+                    "category":categoryName
+                }
+                yield scrapy.Request(url=itemURL, callback=self.productPageParser,meta=data)
+            except:
+                print("error")
         text = response.css("div.ty-pagination a.ty-pagination__next::attr(href)").get()
         if text:
             yield scrapy.Request(url=text, callback=self.productListParser)
@@ -197,12 +200,23 @@ class ThuloSpider(scrapy.Spider):
         
     def productPageParser(self,response):
         imageList = []
-        f.write(str(response.meta["name"])+" \n")
         descriptionsoup = response.css("div#content_description").get()
         imagesSoup = response.css("div.ty-product-bigpicture")
         imageMain = imagesSoup.css("div.ty-product-bigpicture__img")
         images = imageMain.css("a.cm-image-previewer img::attr(src)")
         for image in images:
             imageList.append(image.get())
-
+        with open('./Datas/thulo-2020-08-30.json', mode='a') as productsjson:
+            data = {
+                "name": str(response.meta["name"]),
+                "price": response.meta["price"],
+                "url": response.meta["url"],
+                "CatagoryName": response.meta["category"],
+                "image": response.meta["image"],
+                "description": descriptionsoup,
+                "images": imageList
+            }
+            productsjson.write(json.dumps(data))
+            productsjson.write("\n")
+            productsjson.close()
 

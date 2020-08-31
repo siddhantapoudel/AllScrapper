@@ -13,7 +13,7 @@ class OkDamSpider(scrapy.Spider):
         # response.css('ul.menu a::attr(href)').getall() To get all the urls
         categoryUrls = response.css('div.megadrop div.grid-col ul li a::attr(href)').getall()
         for urls in categoryUrls:
-            yield scrapy.Request(url=urls, callback=self.homePageParser)
+            yield scrapy.Request(url=urls, callback=self.categoryListPageParser)
         #yield scrapy.Request(url=categoryUrls[1], callback=self.categoryListPageParser)
 
 
@@ -43,7 +43,6 @@ class OkDamSpider(scrapy.Spider):
         description = response.css("div#speci01 div ul").get()
         images = response.css("ul#glasscase li")
         brandName = ""
-        f.write(str(response.meta["name"])+" \n")
         rating = response.css("div.product-main-rating a span::text").get()[1:-1]
         if response.css("a.brand-display::text").get():
             brandName = response.css("a.brand-display::text").get()

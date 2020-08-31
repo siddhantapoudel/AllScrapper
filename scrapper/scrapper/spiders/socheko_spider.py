@@ -24,7 +24,7 @@ class SochekoSpider(scrapy.Spider):
             start = 0
             catagoryPageAPI = "https://www.socheko.com/api/1/entity/ms.products?filters=%5B%7B%22field%22:%22categories%22,%22type%22:%22manual%22,%22value%22:%5B%22" + \
                               catagoriesURL["URL"] + "%22%5D,%22operator%22:%22in%22%7D,%7B%22field%22:%22publish%22,%22type%22:%22manual%22,%22value%22:%221%22%7D%5D&limit=40&sort=-created_on&start=" + str(start) + "&total=1"
-            yield scrapy.Request(url=catagoryPageAPI, callback=self.noOfPagesParser,meta={"CategoryURL":catagoriesURL["URL"]})
+            yield scrapy.Request(url=catagoryPageAPI, callback=self.noOfPagesParser,meta={"CategoryURL":catagoriesURL["URL"],"CategoryName":catagoriesURL["Name"]})
 
     def noOfPagesParser(self, response):
         catagoryPageJson = json.loads(response.text)
@@ -38,8 +38,7 @@ class SochekoSpider(scrapy.Spider):
                 catagoryPaginationAPI = "https://www.socheko.com/api/1/entity/ms.products?filters=%5B%7B%22field%22:%22categories%22,%22type%22:%22manual%22,%22value%22:%5B%22" + \
                                         response.meta["CategoryURL"] + "%22%5D,%22operator%22:%22in%22%7D,%7B%22field%22:%22publish%22,%22type%22:%22manual%22,%22value%22:%221%22%7D%5D&limit=40&sort=-created_on&start=" + str(startPagination) + "&total=1"
                 startPagination = startPagination + 40
-                yield scrapy.Request(url=catagoryPaginationAPI,callback=self.productDetailsParser)
-
+                yield scrapy.Request(url=catagoryPaginationAPI,callback=self.productDetailsParser,meta={"CategoryURL":response.meta["CategoryURL"],"CategoryName":response.meta["CategoryName"]})
         else:
             for item in catagoryPageJson['data']:
                 imagesList = []
@@ -58,20 +57,24 @@ class SochekoSpider(scrapy.Spider):
                 else:
                     tempImage = ""
                 if 'description' in item:
-                    descHTML = item['description']
-                    if descHTML:
-                        descriptionDetails = BeautifulSoup(descHTML, 'html.parser')
+                    descriptionDetails = ""
+                    descriptionDetails = item['description']
                 else:
                     descriptionDetails = "No Description"
-                data = {
-                    "Name": item['name'],
-                    "Price": str(item['price']),
-                    "ProductURL": itemURL,
-                    "CatagoryName": catagoriesURL["Name"],
-                    "DispImage": tempImage,
-                    "Description": descriptionDetails,
-                    "Images": imagesList
-                }
+                with open('./Datas/socheko-2020-08-31.json', mode='a') as productsjson:
+                    data = {
+                        "name": item['name'],
+                        "price": str(item['price']),
+                        "url": itemURL,
+                        "CatagoryName": response.meta["CategoryName"],
+                        "image": tempImage,
+                        "description": descriptionDetails,
+                        "images": imagesList
+                    }
+                    productsjson.write(json.dumps(data))
+                    productsjson.write("\n")
+                    productsjson.close()
+
 
     def productDetailsParser(self,response):
         catagoryPageJson = json.loads(response.text)
@@ -95,12 +98,16 @@ class SochekoSpider(scrapy.Spider):
                 descriptionDetails = item['description']
             else:
                 descriptionDetails = "No Description"
-            data = {
-                "Name": item['name'],
-                "Price": str(item['price']),
-                "ProductURL": itemURL,
-                "CatagoryName": catagoriesURL["Name"],
-                "DispImage": tempImage,
-                "Description": descriptionDetails,
-                "Images": imagesList
-            }
+            with open('./Datas/socheko-2020-08-31.json', mode='a') as productsjson:
+                data = {
+                    "name": item['name'],
+                    "price": str(item['price']),
+                    "url": itemURL,
+                    "CatagoryName": response.meta["CategoryName"],
+                    "image": tempImage,
+                    "description": descriptionDetails,
+                    "images": imagesList
+                }
+                productsjson.write(json.dumps(data))
+                productsjson.write("\n")
+                productsjson.close()

@@ -1,5 +1,6 @@
 import scrapy
 import itertools
+import json
 f = open("darazdump.txt", "w")
 
 class SastoDealSpider(scrapy.Spider):
@@ -77,4 +78,16 @@ class SastoDealSpider(scrapy.Spider):
         desc = response.css("div#description").get()
         overview =  response.css("div.value").get()
         description = overview +"<br/><br/>" + desc
-        f.write(str(response.meta["name"])+" \n")
+        with open('./Datas/sastodeal-2020-08-30.json', mode='a') as productsjson:
+            data = {
+                "name": str(response.meta["name"]),
+                "price": response.meta["price"],
+                "url": response.meta["url"],
+                "CatagoryName": "",
+                "image": response.meta["tempImg"],
+                "description": description,
+                "images": [response.meta["tempImg"]]
+            }
+            productsjson.write(json.dumps(data))
+            productsjson.write("\n")
+            productsjson.close()

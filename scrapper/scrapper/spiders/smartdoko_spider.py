@@ -1,5 +1,5 @@
 import scrapy
-f = open("darazdump.txt", "w")
+import json
 
 class SmartDokoSpider(scrapy.Spider):
     name = "smartdoko"
@@ -26,22 +26,31 @@ class SmartDokoSpider(scrapy.Spider):
                 "tempImg":tempImg,
                 "price":price
             }
-            f.write(url+" \n")
             yield scrapy.Request(url = url, callback=self.productDescriptionParser,meta=data)
         paginations = response.css("ul.pagination li")
         for pagination in paginations:
             text = pagination.css("a::text").get()
             if text == "Next":
                 pagiUrl = pagination.css("a::attr(href)").get()
-                f.write(pagiUrl+" \n")
                 yield scrapy.Request(url=pagiUrl, callback=self.categoryListParser)
 
     def productDescriptionParser(self,response):
         images = response.css("ul.thumbelina li")
         description = response.css("div.tabcontent").get()
         imageList = []
-        f.write(str(response.meta["name"])+" \n")
         for image in images:
             tempImgURL = image.css("img::attr(src)").get().replace('/thumb','')
             imageList.append(tempImgURL)
-
+        with open('./Datas/smartdoko-2020-08-30.json', mode='a') as productsjson:
+            data = {
+                "name": str(response.meta["name"]),
+                "price": response.meta["price"],
+                "url": response.meta["url"],
+                "CatagoryName": "",
+                "image": response.meta["tempImg"],
+                "description": description,
+                "images": imageList
+            }
+            productsjson.write(json.dumps(data))
+            productsjson.write("\n")
+            productsjson.close()
