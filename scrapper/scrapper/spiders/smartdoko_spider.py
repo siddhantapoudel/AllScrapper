@@ -8,9 +8,11 @@ class SmartDokoSpider(scrapy.Spider):
         yield scrapy.Request(url=url, callback=self.homePageParser)
 
     def homePageParser(self, response):
-        categories = response.css("div.ac-sub label a::attr(href)").getall()
+        categories = response.css("div.ac-sub label")
         for category in categories:
-            yield scrapy.Request(url=category, callback=self.categoryListParser)
+            catUrl = category.css("a::attr(href)").get()
+            catName = category.css("a::text").get()
+            yield scrapy.Request(url=catUrl, callback=self.categoryListParser,meta={"Category":catName,"MainUrl":catUrl})
 
     def categoryListParser(self, response):
         items = response.css("div.features_items div.productinfo")
@@ -23,6 +25,7 @@ class SmartDokoSpider(scrapy.Spider):
             data={
                 "name":name,
                 "url":url,
+                "Category":response.meta["Category"],
                 "tempImg":tempImg,
                 "price":price
             }
@@ -41,12 +44,12 @@ class SmartDokoSpider(scrapy.Spider):
         for image in images:
             tempImgURL = image.css("img::attr(src)").get().replace('/thumb','')
             imageList.append(tempImgURL)
-        with open('./Datas/smartdoko-2020-08-30.json', mode='a') as productsjson:
+        with open('./Datas/smartdokonew.json', mode='a') as productsjson:
             data = {
                 "name": str(response.meta["name"]),
                 "price": response.meta["price"],
                 "url": response.meta["url"],
-                "CatagoryName": "",
+                "CatagoryName": response.meta["Category"],
                 "image": response.meta["tempImg"],
                 "description": description,
                 "images": imageList

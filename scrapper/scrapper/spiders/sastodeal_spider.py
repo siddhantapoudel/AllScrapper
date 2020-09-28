@@ -10,9 +10,11 @@ class SastoDealSpider(scrapy.Spider):
         yield scrapy.Request(url=url, callback=self.categoryListParser)
 
     def categoryListParser(self,response):
-        links = response.css("li.level2 a::attr(href)").getall()
+        links = response.css("li.level2")
         for link in links:
-            yield scrapy.Request(url=link, callback=self.productListParser, meta={"pageNo":1,"totalData":[],"mainURL":link})
+            url = link.css("a::attr(href)").get()
+            cat = link.css("a span::text").get()
+            yield scrapy.Request(url=url, callback=self.productListParser, meta={"pageNo":1,"totalData":[],"mainURL":url,"Category":cat})
 
     def productListParser(self,response):
         url = response.url
@@ -32,6 +34,7 @@ class SastoDealSpider(scrapy.Spider):
                 "url":url,
                 "name":name,
                 "price":price,
+                "cat":response.meta["Category"],
                 "tempImg":tempImg
             }
             totalList.append(data)
@@ -42,7 +45,7 @@ class SastoDealSpider(scrapy.Spider):
                 f.write(str(list["url"])+" \n")
                 yield scrapy.Request(url=list["url"], callback=self.productDescriptionParser, meta=list)
             f.write(response.meta["mainURL"]+"?p="+str(pageNo)+" \n")
-            yield scrapy.Request(url=response.meta["mainURL"]+"?p="+str(pageNo), callback=self.productPaginationParser, meta={"pageNo":pageNo,"totalData":totalList,"mainURL":response.meta["mainURL"]})
+            yield scrapy.Request(url=response.meta["mainURL"]+"?p="+str(pageNo), callback=self.productPaginationParser, meta={"pageNo":pageNo,"totalData":totalList,"mainURL":response.meta["mainURL"],"Category":response.meta["Category"]})
 
     def productPaginationParser(self,response):
         url = response.url
@@ -62,6 +65,7 @@ class SastoDealSpider(scrapy.Spider):
                 "url":url,
                 "name":name,
                 "price":price,
+                "cat":response.meta["Category"],
                 "tempImg":tempImg
             }
             paginationTotalList.append(data)
@@ -72,18 +76,18 @@ class SastoDealSpider(scrapy.Spider):
                 f.write(str(list["url"])+" \n")
                 yield scrapy.Request(url=list["url"], callback=self.productDescriptionParser, meta=list)
             f.write(mainURL+"?p="+str(pagiPageNo)+" \n")
-            yield scrapy.Request(url=response.meta["mainURL"]+"?p="+str(pagiPageNo), callback=self.productListParser, meta={"pageNo":pagiPageNo,"totalData":paginationTotalList,"mainURL":response.meta["mainURL"]})
+            yield scrapy.Request(url=response.meta["mainURL"]+"?p="+str(pagiPageNo), callback=self.productListParser, meta={"pageNo":pagiPageNo,"totalData":paginationTotalList,"mainURL":response.meta["mainURL"],"Category":response.meta["Category"]})
 
     def productDescriptionParser(self,response):
         desc = response.css("div#description").get()
         overview =  response.css("div.value").get()
         description = overview +"<br/><br/>" + desc
-        with open('./Datas/sastodeal-2020-08-30.json', mode='a') as productsjson:
+        with open('./Datas/sastodealnew.json', mode='a') as productsjson:
             data = {
                 "name": str(response.meta["name"]),
                 "price": response.meta["price"],
                 "url": response.meta["url"],
-                "CatagoryName": "",
+                "CatagoryName": response.meta["cat"],
                 "image": response.meta["tempImg"],
                 "description": description,
                 "images": [response.meta["tempImg"]]

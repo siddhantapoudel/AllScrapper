@@ -61,7 +61,7 @@ class SochekoSpider(scrapy.Spider):
                     descriptionDetails = item['description']
                 else:
                     descriptionDetails = "No Description"
-                with open('./Datas/socheko-2020-08-31.json', mode='a') as productsjson:
+                with open('./Datas/sochekonew.json', mode='a') as productsjson:
                     data = {
                         "name": item['name'],
                         "price": str(item['price']),
@@ -98,7 +98,7 @@ class SochekoSpider(scrapy.Spider):
                 descriptionDetails = item['description']
             else:
                 descriptionDetails = "No Description"
-            with open('./Datas/socheko-2020-08-31.json', mode='a') as productsjson:
+            with open('./Datas/sochekonew.json', mode='a') as productsjson:
                 data = {
                     "name": item['name'],
                     "price": str(item['price']),

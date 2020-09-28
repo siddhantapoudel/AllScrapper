@@ -99,13 +99,14 @@ class DealAyoSpider(scrapy.Spider):
             "https://www.dealayo.com/health-outdoor/fitness-equipment/exercise-bikes.html",
             "https://www.dealayo.com/automobiles-and-accessories.html",
             "https://www.dealayo.com/more/groceries.html",
-            "https://www.dealayo.com/more/office-supplies-stationery/office-accessories.html",
+            "https://www.dealayo.com/more/office-supplies-stationery/office-accessories.html"
         ]
         #yield scrapy.Request(url=urls[1], callback=self.productListParser)
         for url in urls:
             yield scrapy.Request(url=url, callback=self.productListParser)
 
     def productListParser(self,response):
+        category  = response.css("div.category-title h1::text").get()
         products = response.css("div.products-grid ul li.product-item")
         if products:
             for product in products:
@@ -113,7 +114,7 @@ class DealAyoSpider(scrapy.Spider):
                 name = product.css("h2.product-name a::attr(title)").get()
                 price = product.css("span.price::text").get()
                 tempImage = product.css("div.amda-product-top img::attr(src)").get()
-                yield scrapy.Request(url=url, callback=self.productDescriptionParser,meta={"name":name,"tempImage":tempImage,"price":price,"url":url})
+                yield scrapy.Request(url=url, callback=self.productDescriptionParser,meta={"name":name,"tempImage":tempImage,"price":price,"url":url,"Category":category})
             mainPage = response.css("div.pages ol") 
             nextPage = mainPage.css("li a.next::attr(href)").get()
             if nextPage:
@@ -123,12 +124,12 @@ class DealAyoSpider(scrapy.Spider):
         imageList =response.css("div#viewmore-slider img::attr(data-rsmainimg)").getall()
         descriptionHTML = response.css("div.box-description").get()
         f.write(str(response.meta["name"])+" \n")
-        with open('./Datas/dealayo-2020-08-30.json', mode='a') as productsjson:
+        with open('./Datas/dealayonew.json', mode='a') as productsjson:
             data = {
                 "name": str(response.meta["name"]),
                 "price": response.meta["price"],
                 "url": response.meta["url"],
-                "CatagoryName": "",
+                "CatagoryName": response.meta["Category"],
                 "image": response.meta["tempImage"],
                 "description": descriptionHTML,
                 "images": imageList

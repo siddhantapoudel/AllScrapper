@@ -6,7 +6,7 @@ def oliz_store_validator():
     myclient = MongoClient("mongodb://localhost:27017/")
     db = myclient.scrapper
     file1 = open('../scrapper/Datas/oliz-store-2020-08-30.json', 'r') 
-    mycol = db.newproducts
+    mycol = db.latestcol
     Lines = file1.readlines() 
     for line in Lines:
         data = json.loads(line)
@@ -23,9 +23,9 @@ def oliz_store_validator():
             "description":data["description"],
             "images":data["images"]
         }
-        found = db.newproducts.find_one({"url":{"$eq":insertData["url"]}})
+        found = db.latestcol.find_one({"url":{"$eq":insertData["url"]}})
         if found is None:
-           db.newproducts.insert_one(insertData)
+           db.latestcol.insert_one(insertData)
         else:
             print("Found "+ insertData["name"])
 
@@ -33,8 +33,8 @@ def oliz_store_validator():
 def socheko():
     myclient = MongoClient("mongodb://localhost:27017/")
     db = myclient.scrapper
-    file1 = open('../scrapper/Datas/socheko-2020-08-31.json', 'r') 
-    mycol = db.newproducts
+    file1 = open('../scrapper/Datas/sochekonew.json', 'r') 
+    mycol = db.latestcol
     Lines = file1.readlines() 
     for line in Lines:
         data = json.loads(line)
@@ -50,10 +50,10 @@ def socheko():
             "description":data["description"],
             "images":data["images"]
         }
-        found = db.newproducts.find_one({"url":{"$eq":insertData["url"]}})
-        if found is None:
+        found = db.latestcol.find_one({"url":{"$eq":insertData["url"]}})
+        if found != {}:
             if insertData["price"]:
-                db.newproducts.insert_one(insertData)
+                db.latestcol.insert_one(insertData)
             else:
                 print("No Price "+ insertData["name"])
         else:
@@ -63,8 +63,8 @@ def socheko():
 def smartdoko():
     myclient = MongoClient("mongodb://localhost:27017/")
     db = myclient.scrapper
-    file1 = open('../scrapper/Datas/smartdoko-2020-08-30.json', 'r') 
-    mycol = db.newproducts
+    file1 = open('../scrapper/Datas/smartdokonew.json', 'r') 
+    mycol = db.latestcol
     Lines = file1.readlines() 
     for line in Lines:
         data = json.loads(line)
@@ -81,10 +81,10 @@ def smartdoko():
             "description":data["description"],
             "images":data["images"]
         }
-        found = db.newproducts.find_one({"url":{"$eq":insertData["url"]}})
-        if found is None:
+        found = db.latestcol.find_one({"url":{"$eq":insertData["url"]}})
+        if found !={}:
             if insertData["price"]:
-                db.newproducts.insert_one(insertData)
+                db.latestcol.insert_one(insertData)
             else:
                 print("No Price "+ insertData["name"])
         else:
@@ -94,8 +94,8 @@ def smartdoko():
 def thulo():
     myclient = MongoClient("mongodb://localhost:27017/")
     db = myclient.scrapper
-    file1 = open('../scrapper/Datas/thulo-2020-08-30.json', 'r') 
-    mycol = db.newproducts
+    file1 = open('../scrapper/Datas/thulonew.json', 'r') 
+    mycol = db.latestcol
     Lines = file1.readlines() 
     for line in Lines:
         data = json.loads(line)
@@ -111,10 +111,10 @@ def thulo():
             "description":data["description"],
             "images":data["images"]
         }
-        found = db.newproducts.find_one({"url":{"$eq":insertData["url"]}})
-        if found is None:
+        found = db.latestcol.find_one({"url":{"$eq":insertData["url"]}})
+        if found !={}:
             if insertData["price"]:
-                db.newproducts.insert_one(insertData)
+                db.latestcol.insert_one(insertData)
             else:
                 print("No Price "+ insertData["name"])
         else:
@@ -124,8 +124,8 @@ def thulo():
 def sastodeal():
     myclient = MongoClient("mongodb://localhost:27017/")
     db = myclient.scrapper
-    file1 = open('../scrapper/Datas/sastodeal-2020-08-30.json', 'r') 
-    mycol = db.newproducts
+    file1 = open('../scrapper/Datas/sastodealnew.json', 'r') 
+    mycol = db.latestcol
     Lines = file1.readlines() 
     for line in Lines:
         data = json.loads(line)
@@ -144,10 +144,10 @@ def sastodeal():
                 "description":data["description"],
                 "images":data["images"]
             }
-            found = db.newproducts.find_one({"url":{"$eq":insertData["url"]}})
-            if found is None:
+            found = db.latestcol.find_one({"url":{"$eq":insertData["url"]}})
+            if found !={}:
                 if insertData["price"]:
-                    db.newproducts.insert_one(insertData)
+                    db.latestcol.insert_one(insertData)
                 else:
                     print("No Price "+ insertData["name"])
             else:
@@ -157,8 +157,8 @@ def sastodeal():
 def daraz():
     myclient = MongoClient("mongodb://localhost:27017/")
     db = myclient.scrapper
-    file1 = open('../scrapper/Datas/daraz-2020-08-31.json', 'r') 
-    mycol = db.newproducts
+    file1 = open('../scrapper/Datas/daraznew.json', 'r') 
+    mycol = db.latestcol
     Lines = file1.readlines() 
     for line in Lines:
         data = json.loads(line)
@@ -175,10 +175,10 @@ def daraz():
                 "description":data["description"],
                 "images":data["images"]
             }
-            found = db.newproducts.find_one({"url":{"$eq":insertData["url"]}})
-            if found is None:
+            found = db.latestcol.find_one({"url":{"$eq":insertData["url"]}})
+            if found !={}:
                 if insertData["price"]:
-                    db.newproducts.insert_one(insertData)
+                    db.latestcol.insert_one(insertData)
                 else:
                     print("No Price "+ insertData["name"])
             else:
@@ -187,8 +187,8 @@ def daraz():
 def okdam():
     myclient = MongoClient("mongodb://localhost:27017/")
     db = myclient.scrapper
-    file1 = open('../scrapper/Datas/okdam-2020-08-30.json', 'r') 
-    mycol = db.newproducts
+    file1 = open('../scrapper/Datas/okadamnew.json', 'r') 
+    mycol = db.latestcol
     Lines = file1.readlines() 
     for line in Lines:
         data = json.loads(line)
@@ -204,10 +204,10 @@ def okdam():
                 "description":data["description"],
                 "images":data["images"]
             }
-            found = db.newproducts.find_one({"url":{"$eq":insertData["url"]}})
+            found = db.latestcol.find_one({"url":{"$eq":insertData["url"]}})
             if found is None:
                 if insertData["price"]:
-                    db.newproducts.insert_one(insertData)
+                    db.latestcol.insert_one(insertData)
                 else:
                     print("No Price "+ insertData["name"])
             else:
@@ -216,8 +216,8 @@ def okdam():
 def dealayo():
     myclient = MongoClient("mongodb://localhost:27017/")
     db = myclient.scrapper
-    file1 = open('../scrapper/Datas/dealayo-2020-08-30.json', 'r') 
-    mycol = db.newproducts
+    file1 = open('../scrapper/Datas/dealayonew.json', 'r') 
+    mycol = db.latestcol
     Lines = file1.readlines() 
     for line in Lines:
         data = json.loads(line)
@@ -235,15 +235,15 @@ def dealayo():
                 "description":data["description"],
                 "images":data["images"]
             }
-            found = db.newproducts.find_one({"url":{"$eq":insertData["url"]}})
+            found = db.latestcol.find_one({"url":{"$eq":insertData["url"]}})
             if found is None:
                 if insertData["price"]:
                     # print("Not Found "+ insertData["name"])
-                    db.newproducts.insert_one(insertData)
+                    db.latestcol.insert_one(insertData)
                 else:
                     print("No Price "+ insertData["name"])
             else:
                 print("Found "+ insertData["name"])
         
 if __name__ == "__main__":
-    dealayo()
+   smartdoko()

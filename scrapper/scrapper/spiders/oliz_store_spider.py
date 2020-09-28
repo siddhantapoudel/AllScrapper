@@ -11,7 +11,8 @@ class OlizStoreSpider(scrapy.Spider):
         cats = response.css("li.level2")
         for cat in cats:
             catUrl = cat.css("a::attr(href)").get()
-            yield scrapy.Request(url=catUrl, callback=self.categoryListPageParser)
+            catName = cat.css("a span::text").get()
+            yield scrapy.Request(url=catUrl, callback=self.categoryListPageParser, meta={"Category":catName,"MainURL":catUrl})
 
     def categoryListPageParser(self, response):
         productList = response.css("div.product-item-info")
@@ -25,6 +26,7 @@ class OlizStoreSpider(scrapy.Spider):
                 "name":finalName,
                 "image":tempImage,
                 "price":productPrice,
+                "Category":response.meta["Category"],
                 "url":productURL
             }
             yield scrapy.Request(url=productURL, callback=self.productDescriptionParser,meta=data)
@@ -37,7 +39,7 @@ class OlizStoreSpider(scrapy.Spider):
                 "name": str(response.meta["name"]),
                 "price": response.meta["price"],
                 "url": response.meta["url"],
-                "CatagoryName": "",
+                "CatagoryName": response.meta["Category"],
                 "image": response.meta["image"],
                 "description": description,
                 "images": [response.meta["image"]]

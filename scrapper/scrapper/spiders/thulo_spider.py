@@ -206,7 +206,7 @@ class ThuloSpider(scrapy.Spider):
         images = imageMain.css("a.cm-image-previewer img::attr(src)")
         for image in images:
             imageList.append(image.get())
-        with open('./Datas/thulo-2020-08-30.json', mode='a') as productsjson:
+        with open('./Datas/thulonew.json', mode='a') as productsjson:
             data = {
                 "name": str(response.meta["name"]),
                 "price": response.meta["price"],

@@ -11,9 +11,11 @@ class OkDamSpider(scrapy.Spider):
 
     def homePageParser(self, response):
         # response.css('ul.menu a::attr(href)').getall() To get all the urls
-        categoryUrls = response.css('div.megadrop div.grid-col ul li a::attr(href)').getall()
+        categoryUrls = response.css('div.megadrop div.grid-col ul li')
         for urls in categoryUrls:
-            yield scrapy.Request(url=urls, callback=self.homePageParser)
+            url = urls.css("a::attr(href)").get()
+            category = urls.css("a::attr(title)").get()
+            yield scrapy.Request(url=url, callback=self.categoryListPageParser,meta={"Category":category,"MainURL":url})
         #yield scrapy.Request(url=categoryUrls[1], callback=self.categoryListPageParser)
 
 
@@ -29,6 +31,7 @@ class OkDamSpider(scrapy.Spider):
             data = {
                 "name":prodName,
                 "image":tempImage,
+                "Category":response.meta["Category"],
                 "price":prodPrice,
                 "url":prodUrl
             }
@@ -37,7 +40,7 @@ class OkDamSpider(scrapy.Spider):
         for pagination in paginations:
             if pagination.css("a::text").get() == '›':
                 url = pagination.css("a::attr(href)").get() # go to that page
-                yield scrapy.Request(url=url, callback=self.categoryListPageParser)
+                yield scrapy.Request(url=url, callback=self.categoryListPageParser,meta={"Category":response.meta["Category"],"MainURL":url})
 
     def productPageParser(self,response):
         description = response.css("div#speci01 div ul").get()
@@ -51,12 +54,12 @@ class OkDamSpider(scrapy.Spider):
         for image in images:
             imageUrl = image.css("img::attr(src)").get()
             imageList.append(imageUrl)
-        with open('./Datas/okadam-2020-08-30.json', mode='a') as productsjson:
+        with open('./Datas/okadamnewjson', mode='a') as productsjson:
             data = {
                 "name": str(response.meta["name"]),
                 "price": response.meta["price"],
                 "url": response.meta["url"],
-                "CatagoryName": "",
+                "CatagoryName": response.meta["Category"],
                 "image": response.meta["image"],
                 "description": description,
                 "images": imageList
