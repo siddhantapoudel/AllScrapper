@@ -11,19 +11,67 @@ driver = webdriver.Firefox()
 class DarazSpider(scrapy.Spider):
     name = "daraz"
     def start_requests(self):
-        url = "https://www.daraz.com.np"
         driver.get("https://www.daraz.com.np")
         links = driver.find_elements_by_css_selector('ul.lzd-site-menu-sub li.lzd-site-menu-sub-item')
-        num = 0
         for link in links:
-            if num != 0:
-                break
-            num = num+1
             url = link.find_element_by_css_selector("a").get_attribute("href")
             catName = link.find_element_by_css_selector("a span").get_attribute("innerHTML")
-            soup = BeautifulSoup(url+"?ajax=true")
-            result = json.loads(soup.text)
-            yield scrapy.Request(url=url+"?ajax=true", callback=self.productListParser, meta={"mainURL":url,"catName":catName})
+            page = requests.get(url+"?ajax=true","html.parser")
+            result = json.loads(page.content)
+            #parse for result once then move on to pagination if there is any
+            if 'mods' in result:
+                for items in result['mods']['listItems']:
+                    itemImages = []
+                    for thumbs in items['thumbs']:
+                        itemImages.append(thumbs['image'])
+                    # print(itemImages)
+                    itemURL = "https:"+items['productUrl']
+                    tempImage = ""
+                    Price = float(items['price'])
+                    if 'image' in items:
+                        tempImage = items["image"]
+                    data = {
+                            "name": str(items['name']),
+                            "price": int(Price),
+                            "url": str(itemURL),
+                            "category": str(catName),
+                            "image": str(tempImage),
+                            "description": "",
+                            "images": []
+                        }
+                    yield scrapy.Request(url=str(itemURL), callback=self.productPageParser, meta=data)
+            else:
+                print("Error:"+ url)
+            totalItems = int(result['mainInfo']['totalResults'])
+            if totalItems>40:
+                totalPage = 0
+                if (totalItems % 40)>0:
+                    totalPage = int(totalItems/40) + 1
+                else:
+                    totalPage = int(totalItems/40)
+                for page in range(totalPage):
+                    actPage = page+1
+                    try:
+                        driver.get(url+"?page="+str(actPage))
+                        datas = driver.find_elements_by_css_selector("div[data-qa-locator='product-item']")
+                        for data in datas:
+                            tags = data.find_elements_by_tag_name("a")
+                            name = tags[1].get_attribute("title")
+                            pricetags = data.find_elements_by_tag_name("span")
+                            price = price_str(pricetags[0].get_attribute("innerHTML"))
+                            produrl = tags[0].get_attribute("href")
+                            data = {
+                                "name": str(name),
+                                "price": int(price),
+                                "url": str(produrl),
+                                "category": str(catName),
+                                "image": "",
+                                "description": "",
+                                "images": []
+                            }
+                            yield scrapy.Request(url=str(produrl), callback=self.productPageParser, meta=data)
+                    except:
+                        print("Error")
 
     def categoryListParser(self,response):
         links = response.css("ul.lzd-site-menu-sub li.lzd-site-menu-sub-item")
@@ -127,6 +175,8 @@ class DarazSpider(scrapy.Spider):
             for page in range(totalPage):
                 actPage = page+1
                 yield scrapy.Request(url=response.url+"?page="+str(actPage)+"&spm=a2a0e.11779170.cate_1.1.287d2d2boKxfpT", callback=self.paginationListParser, meta={"CategoryName":response.meta["CategoryName"],"MainUrl":response.url})
+        
+        
         """
     def paginationListParser(self,response):
         result = response.json()
